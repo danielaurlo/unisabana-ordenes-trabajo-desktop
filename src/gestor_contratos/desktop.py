@@ -109,6 +109,8 @@ class PdfPanel(QWidget):
         super().__init__()
         self.document = QPdfDocument(self)
         self._temporary_path: Path | None = None
+        self._pending_paths: set[Path] = set()
+        self.document.statusChanged.connect(self._handle_document_status)
         self.viewer = QPdfView(self)
         self.viewer.setDocument(self.document)
         self.viewer.setPageMode(QPdfView.PageMode.MultiPage)
@@ -120,11 +122,35 @@ class PdfPanel(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.viewer)
 
+    @Slot(object)
+    def _handle_document_status(self, status) -> None:
+        """Remove old files after QPdfDocument releases them.
+
+        ``close()`` can leave the document in ``Unloading`` temporarily. This
+        matters on Windows, where deleting the file during that state raises
+        ``PermissionError`` because the PDF engine still has an open handle.
+        """
+        if status == QPdfDocument.Status.Null:
+            self._cleanup_pending_paths()
+
+    def _cleanup_pending_paths(self) -> None:
+        for path in tuple(self._pending_paths):
+            try:
+                path.unlink(missing_ok=True)
+            except OSError:
+                # Qt may still be releasing the handle even after notifying
+                # the status change. Keep the path for the next notification
+                # rather than allowing a UI update to fail.
+                continue
+            self._pending_paths.discard(path)
+
     def show_bytes(self, content: bytes | None):
         self.document.close()
         if self._temporary_path is not None:
-            self._temporary_path.unlink(missing_ok=True)
+            self._pending_paths.add(self._temporary_path)
             self._temporary_path = None
+        if self.document.status() == QPdfDocument.Status.Null:
+            self._cleanup_pending_paths()
         if content is None:
             return
         handle = tempfile.NamedTemporaryFile(
