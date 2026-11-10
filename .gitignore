@@ -1,0 +1,48 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Test and tooling caches
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# Streamlit
+.streamlit/secrets.toml
+/.venv/
+/.ruff_cache/
+/__pycache__/
+/deployment/
+/nuitka-crash-report.xml
+/runtime/*
+!/runtime/.gitkeep
+/build/
+/dist/
+/GestorContratos*.dist/
+/GestorContratos*.app/
+/GestorContratos*.dmg
+/GestorContratos*.zip
+/pysidedeploy.spec
+
+# OS files
+.DS_Store
+
+# Private documents and generated output
+assets/ejemplos/
+assets/result/
+private/
+*.pdf
+*.xlsx
+!assets/plantilla/acta_entrega_vacia.xlsx
+~$*
+.env
+.env.*
+!.env.example
