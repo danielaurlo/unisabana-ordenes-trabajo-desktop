@@ -11,6 +11,7 @@ PROJECT_ROOT = next(
         root
         for root in (
             _SOURCE_ROOT,
+            _EXECUTABLE_ROOT / "_internal",
             _EXECUTABLE_ROOT,
             _EXECUTABLE_ROOT.parent,
             _EXECUTABLE_ROOT.parent / "Resources",
